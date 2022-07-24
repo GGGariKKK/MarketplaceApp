@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
+/**
+ * Class that represents all the logic and operations to work with {@link Marketplace} through command line interface
+ */
 public class Menu {
     private final Marketplace marketplace;
 
@@ -15,6 +18,10 @@ public class Menu {
 
     private List<Product> products;
 
+    /**
+     * One and the only one constructor for creating menu object
+     * @param fillWithDefaultValues {@code true} to fill this instance of an object with 3 default values of products and customers, {@code false} otherwise
+     */
     public Menu(boolean fillWithDefaultValues) {
         marketplace = new Marketplace();
         customers = new ArrayList<>();
@@ -34,10 +41,17 @@ public class Menu {
         }
     }
 
+    /**
+     * Start command line application
+     */
     public void call() {
         while (promptMenu()) ;
     }
 
+    /**
+     * Textual interface of the menu. Every chosen item leads to corresponding action in the program
+     * @return {@code false} to exit application and {@code true} otherwise
+     */
     private boolean promptMenu() {
         System.out.printf("""
                                 
@@ -82,6 +96,9 @@ public class Menu {
         return true;
     }
 
+    /**
+     * Adding customer to the current object of {@link Menu} class. IDs of customers are generated automatically
+     */
     private void addCustomer() {
         var firstName = requireStringInput("Enter first name: ");
         var lastName = requireStringInput("Enter last name: ");
@@ -93,6 +110,9 @@ public class Menu {
         System.out.println("Customer " + customer + " added successfully");
     }
 
+    /**
+     * Adding product to the current object of {@link Menu} class. IDs of products are generated automatically
+     */
     private void addProduct() {
         var name = requireStringInput("Enter the name of the product: ");
         var price = requirePositiveIntegerInput("Enter the price: ");
@@ -103,6 +123,12 @@ public class Menu {
         System.out.println("Product " + product + " was added successfully");
     }
 
+    /**
+     * Menu item that handles the purchase of a new product by customer
+     * @throws CustomerNotFoundException if specified {@code customerID} is not contained in the current instance of menu object
+     * @throws ProductNotFoundException if specified {@code productID} is not contained in the current instance of menu object
+     * @throws NotEnoughFundsException if the price of the product with specified {@code productID} is higher than the balance of the customer with {@code customerID}
+     */
     private void buyProduct() throws CustomerNotFoundException, ProductNotFoundException, NotEnoughFundsException {
         var customerID = requirePositiveIntegerInput("Enter the id of a customer: ");
         var productID = requirePositiveIntegerInput("Enter the id of a product: ");
@@ -127,6 +153,10 @@ public class Menu {
         System.out.printf("Operation successful!\nCustomer: %s bought product: %s", customer, product);
     }
 
+    /**
+     *
+     * @throws ProductNotFoundException
+     */
     private void customersThatBoughtTheProduct() throws ProductNotFoundException {
         var productID = requirePositiveIntegerInput("Enter the product ID: ");
         var customersIDs = marketplace.getCustomersIDsThatBoughtTheProduct(productID);
@@ -168,6 +198,11 @@ public class Menu {
         System.out.println("Removal successful");
     }
 
+    /**
+     * Utility method to shorten the process of inputting data.
+     * @param message message to show before asking to input data
+     * @return positive integer value (including 0)
+     */
     private int requirePositiveIntegerInput(String message) {
         System.out.print(message);
 
@@ -179,6 +214,11 @@ public class Menu {
         return Integer.parseInt(temp);
     }
 
+    /**
+     * Utility method to shorten the process of inputting data.
+     * @param message message to show before asking to input data
+     * @return non-empty {@link String} value
+     */
     private String requireStringInput(String message) {
         System.out.print(message);
         var scanner = new Scanner(System.in);
