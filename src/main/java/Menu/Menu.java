@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 public class Menu {
     private final Marketplace marketplace;
 
-    private final List<Customer> customers;
+    private List<Customer> customers;
 
-    private final List<Product> products;
+    private List<Product> products;
 
     public Menu() {
         marketplace = new Marketplace();
@@ -36,48 +36,86 @@ public class Menu {
 
     public void call() {
         //TODO: reconsider this solution
-        while(promptMenu());
+        while (promptMenu()) ;
     }
 
-    private boolean promptMenu(){
+    private boolean promptMenu() {
         System.out.printf("""
-                
+                                
                 %1$sMain menu%1$s
                 Choose the operation to perform:
-                1) Buy a product
-                2) Display list of all customers
-                3) Display list of all products
-                4) Display list of user products by user id
-                5) Display list of users that bought product by product id
-                6) Exit
+                1) Add customer
+                2) Add product
+                3) Buy a product
+                4) Display list of all customers
+                5) Display list of all products
+                6) Display list of customer's products by customer id
+                7) Display list of customers that bought product by product id
+                8) Remove customer
+                9) Remove product
+                10) Exit
                 %2$s
-                Your option:""", "-".repeat(40), "-".repeat(89));
+                """, "-".repeat(40), "-".repeat(89));
 
-        var chosenOption = requireInput("");
+        var chosenOption = requirePositiveIntegerInput("Your option: ");
 
         System.out.println("-".repeat(89));
 
         switch (chosenOption) {
-            case 1 -> buyProduct();
-            case 2 -> customers.forEach(System.out::println);
-            case 3 -> products.forEach(System.out::println);
-            case 4 -> customerProducts();
-            case 5 -> customersThatBoughtTheProduct();
-            case 6 -> {return false;}
+            case 1 -> addCustomer();
+            case 2 -> addProduct();
+            case 3 -> buyProduct();
+            case 4 -> customers.forEach(System.out::println);
+            case 5 -> products.forEach(System.out::println);
+            case 6 -> customerProducts();
+            case 7 -> customersThatBoughtTheProduct();
+            case 8 -> removeCustomer();
+            case 9 -> removeProduct();
+            case 10 -> {
+                return false;
+            }
         }
 
         return true;
     }
 
+    private void addCustomer() {
+        var firstName = requireStringInput("Enter first name: ");
+        var lastName = requireStringInput("Enter last name: ");
+        var balance = requirePositiveIntegerInput("Enter the balance: ");
+
+        var customer = new Customer(firstName, lastName, balance);
+        customers.add(customer);
+
+        System.out.println("Customer " + customer + " added successfully");
+    }
+
+    private void addProduct() {
+        var name = requireStringInput("Enter the name of the product: ");
+        var price = requirePositiveIntegerInput("Enter the price: ");
+
+        var product = new Product(name, price);
+        products.add(product);
+
+        System.out.println("Product " + product + " was added successfully");
+    }
+
     private void buyProduct() {
-        var customerID = requireInput("Enter the id of a customer: ");
-        var productID = requireInput("Enter the id of a product: ");
+        var customerID = requirePositiveIntegerInput("Enter the id of a customer: ");
+        var productID = requirePositiveIntegerInput("Enter the id of a product: ");
 
-        var customer = customers.stream().filter(curr -> curr.getID() == customerID).toList().get(0);
-        var product = products.stream().filter(curr -> curr.getID() == productID).toList().get(0);
+        var foundCustomer = customers.stream().filter(curr -> curr.getID() == customerID).findFirst();
+        if(foundCustomer.isEmpty())
+            throw new RuntimeException("Customer with ID: " + customerID + " was not found");
 
-        //TODO: correct runtime exception
-        if(customer.getBalance() < product.getPrice())
+        var foundProduct = products.stream().filter(curr -> curr.getID() == productID).findFirst();
+        if(foundProduct.isEmpty())
+            throw new RuntimeException("Product with ID: " + productID + " was not found");
+
+        var customer = foundCustomer.get();
+        var product = foundProduct.get();
+
+        if (customer.getBalance() < product.getPrice())
             throw new RuntimeException("not enough money to buy product");
 
         customer.setBalance(customer.getBalance() - product.getPrice());
@@ -87,26 +125,64 @@ public class Menu {
     }
 
     private void customersThatBoughtTheProduct() {
-        var productID = requireInput("Enter the product ID: ");
+        var productID = requirePositiveIntegerInput("Enter the product ID: ");
         var customersIDs = marketplace.getCustomersIDsThatBoughtTheProduct(productID);
 
-        var product = products.stream().filter(curr -> curr.getID() == productID).toList().get(0);
+        var foundProductList = products.stream().filter(curr -> curr.getID() == productID).toList();
+        if(foundProductList.size() == 0)
+            throw new RuntimeException("No such product");
+
         var customers = this.customers.stream().filter(cs -> customersIDs.contains(cs.getID())).toList();
 
-        System.out.printf("Customers that bought the product %s:\n%s\n", product, customers.stream().map(cs -> cs.toString()).collect(Collectors.joining("\n")));
+        System.out.printf("Customers that bought the product %s:\n%s\n", foundProductList.get(0), customers.stream().map(cs -> cs.toString()).collect(Collectors.joining("\n")));
     }
 
     private void customerProducts() {
-        var customerID = requireInput("Enter the id of a customer: ");
+        var customerID = requirePositiveIntegerInput("Enter the id of a customer: ");
         var productIDs = marketplace.getCustomerProductsIDs(customerID);
 
-        var customer = customers.stream().filter(curr -> curr.getID() == customerID).toList().get(0);
+        var foundCustomersList = customers.stream().filter(curr -> curr.getID() == customerID).toList();
+        if(foundCustomersList.size() == 0)
+            throw new RuntimeException("No such customer found");
+
+
         var products = this.products.stream().filter(product -> productIDs.contains(product.getID())).toList();
-        System.out.printf("Customer: %s has bought products:\n%s\n", customer, products.stream().map(c -> c.toString()).collect(Collectors.joining("\n")));
+        System.out.printf("Customer: %s has bought products:\n%s\n", foundCustomersList.get(0), products.stream().map(c -> c.toString()).collect(Collectors.joining("\n")));
     }
 
-    private int requireInput(String message){
+    private void removeCustomer(){
+        var customerID = requirePositiveIntegerInput("Enter the ID of a customer: ");
+        customers = customers.stream().filter(cs -> cs.getID() != customerID).collect(Collectors.toList());
+        marketplace.removeCustomer(customerID);
+        System.out.println("Removal successful");
+    }
+
+    private void removeProduct(){
+        var productID = requirePositiveIntegerInput("Enter the ID of a product: ");
+        products = products.stream().filter(product -> product.getID() != productID).collect(Collectors.toList());
+        marketplace.removeProductFromCustomersPurchases(productID);
+        System.out.println("Removal successful");
+    }
+
+    private int requirePositiveIntegerInput(String message) {
         System.out.print(message);
-        return new Scanner(System.in).nextInt();
+
+        var scanner = new Scanner(System.in);
+        String temp = "";
+        while(!(temp = scanner.nextLine()).matches("\\d+"))
+            System.out.print("Try again. " + message);
+
+        return Integer.parseInt(temp);
+    }
+
+    private String requireStringInput(String message){
+        System.out.print(message);
+        var scanner = new Scanner(System.in);
+
+        String input = "";
+        while ((input = scanner.nextLine()).isBlank())
+            System.out.print("Try again. " + message);
+
+        return input;
     }
 }

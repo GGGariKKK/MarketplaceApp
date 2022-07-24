@@ -24,4 +24,12 @@ public class Marketplace {
     public List<Integer> getCustomersIDsThatBoughtTheProduct(int productID) {
         return customersPurchases.entrySet().stream().filter(entry -> entry.getValue().contains(productID)).map(Map.Entry::getKey).collect(Collectors.toList());
     }
+
+    public void removeCustomer(int customerID){
+        customersPurchases.remove(customerID);
+    }
+
+    public void removeProductFromCustomersPurchases(int productID){
+        customersPurchases.forEach((k, v) -> v.remove((Object)productID));
+    }
 }
