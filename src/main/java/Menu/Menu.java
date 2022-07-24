@@ -154,8 +154,8 @@ public class Menu {
     }
 
     /**
-     *
-     * @throws ProductNotFoundException
+     * Display list of customers that bought product by product id
+     * @throws ProductNotFoundException if a product with specified {@code productID} is not present in the {@link Menu#products}(i.e. such product does not exist)
      */
     private void customersThatBoughtTheProduct() throws ProductNotFoundException {
         var productID = requirePositiveIntegerInput("Enter the product ID: ");
@@ -170,6 +170,10 @@ public class Menu {
         System.out.printf("Customers that bought the product %s:\n%s\n", foundProductList.get(), customers.stream().map(cs -> cs.toString()).collect(Collectors.joining("\n")));
     }
 
+    /**
+     * Display list of customer products by customer id
+     * @throws CustomerNotFoundException if a customer with specified {@code customerID} is not present in the {@link Menu#customers}
+     */
     private void customerProducts() throws CustomerNotFoundException {
         var customerID = requirePositiveIntegerInput("Enter the id of a customer: ");
         var productIDs = marketplace.getCustomerProductsIDs(customerID);
@@ -184,6 +188,9 @@ public class Menu {
         System.out.printf("Customer: %s has bought such products:\n%s\n", foundCustomersList.get(), products.stream().map(c -> c.toString()).collect(Collectors.joining("\n")));
     }
 
+    /**
+     * Deletion of a customer by its {@code customerID}. Customer is being deleted both from {@link Menu#customers} and his/her records from {@link Marketplace}. In case specified {@code customerID} does not exist method does nothing and still prints to console about a successful removal
+     */
     private void removeCustomer() {
         var customerID = requirePositiveIntegerInput("Enter the ID of a customer: ");
         customers = customers.stream().filter(cs -> cs.getID() != customerID).collect(Collectors.toList());
@@ -191,6 +198,9 @@ public class Menu {
         System.out.println("Removal successful");
     }
 
+    /**
+     * Deletion of a product by its {@code productID}. Product is being deleted both from {@link Menu#products} and its records from {@link Marketplace}. In case specified {@code productID} does not exist method does nothing and still prints to console about a successful removal
+     */
     private void removeProduct() {
         var productID = requirePositiveIntegerInput("Enter the ID of a product: ");
         products = products.stream().filter(product -> product.getID() != productID).collect(Collectors.toList());
