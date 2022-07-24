@@ -15,26 +15,26 @@ public class Menu {
 
     private List<Product> products;
 
-    public Menu() {
+    public Menu(boolean fillWithDefaultValues) {
         marketplace = new Marketplace();
-        customers = new ArrayList<>(
-                List.of(
-                        new Customer("Hulda", "Serafini", 1000),
-                        new Customer("Calixta", "Vilario", 1000),
-                        new Customer("Maryanne", "Storstrand", 1000)
-                )
-        );
-        products = new ArrayList<>(
-                List.of(
-                        new Product("Milk", 15),
-                        new Product("Eggs", 10),
-                        new Product("Pasta", 11)
-                )
-        );
+        customers = new ArrayList<>();
+        products = new ArrayList<>();
+
+        if (fillWithDefaultValues) {
+            customers.addAll(List.of(
+                    new Customer("Hulda", "Serafini", 1000),
+                    new Customer("Calixta", "Vilario", 1000),
+                    new Customer("Maryanne", "Storstrand", 1000)
+            ));
+            products.addAll(List.of(
+                    new Product("Milk", 15),
+                    new Product("Eggs", 10),
+                    new Product("Pasta", 11)
+            ));
+        }
     }
 
     public void call() {
-        //TODO: reconsider this solution
         while (promptMenu()) ;
     }
 
